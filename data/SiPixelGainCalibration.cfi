@@ -1,0 +1,17 @@
+
+
+   module SiPixelGainCalibrationUnpackLocal = SiPixelGainCalibrationUnpackLocal{
+       untracked string inputFileName = "/afs/cern.ch/user/a/aryd/Pixel/forward/ryd/calib_070416a.dat"
+       untracked string outputRootFileName = "histograms_for_monitoring.root"
+       untracked uint32 numberOfPixelRows = 80
+       untracked uint32 numberOfPixelColumns = 52
+       untracked uint32 numberOfPixelROCs = 24
+       untracked uint32 numberOfPixelFEDs = 40
+       untracked uint32 minVCalFit = 15
+       untracked uint32 maxVCalFit = 100
+       untracked bool saveAllHistos = false
+       untracked bool doDataBases = false
+       untracked bool pixelAlive = false
+       untracked bool pixelGain = true
+       untracked string src = "bla"
+   } 
