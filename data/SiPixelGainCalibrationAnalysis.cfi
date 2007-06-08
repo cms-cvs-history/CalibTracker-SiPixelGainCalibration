@@ -1,9 +1,11 @@
 
    module SiPixelGainCalibrationAnalysis = SiPixelGainCalibrationAnalysis{
+
+
+
        untracked string src = "siPixelDigi"
        untracked string InputInstance = ""
        untracked string inputFileName = "/afs/cern.ch/user/a/aryd/Pixel/forward/ryd/calib_070416a.dat"
-       untracked string rootFileName = "histograms_for_monitoring.root"
 
 # parameter set from CondTools/SiPixel/ module SiPixelGalibrationService 
        using SiPixelGainCalibrationServiceParameters
