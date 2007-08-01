@@ -13,8 +13,8 @@
       string record= "SiPixelGainCalibrationRcd"
       untracked bool appendDatabaseMode = false
 # maximum rows, colums, etc
-       untracked uint32 numberOfPixelRows = 80
-       untracked uint32 numberOfPixelColumns = 52
+       untracked uint32 numberOfPixelRows = 160
+       untracked uint32 numberOfPixelColumns = 260
        untracked uint32 numberOfPixelROCs = 24
        untracked uint32 numberOfPixelFEDs = 40
 
@@ -26,4 +26,5 @@
 # the maximum gain/pedestal value that is used for encryption:
        untracked double maximumGain = 5.0
        untracked double maximumPedestal = 120.0
+       untracked bool dummyData = false
   } 

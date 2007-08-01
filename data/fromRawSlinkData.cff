@@ -1,0 +1,28 @@
+  # cabling
+  include "CondCore/DBCommon/data/CondDBCommon.cfi"
+  replace CondDBCommon.connect = "sqlite_file:/afs/cern.ch/user/c/chiochia/public/cabling.db"
+  replace CondDBCommon.catalog = "file:/afs/cern.ch/user/c/chiochia/public/cablingCatalog.xml"
+  replace CondDBCommon.timetype = "runnumber"
+  replace CondDBCommon.DBParameters.messageLevel = 1
+  replace CondDBCommon.DBParameters.authenticationPath="."
+  es_source = PoolDBESSource {
+    using CondDBCommon
+    VPSet toGet={{string record="SiPixelFedCablingMapRcd" string tag="SiPixelFedCablingMap_v1"}}
+  }
+
+
+  # Tracker SimGeometryXML
+  include "Geometry/TrackerSimData/data/trackerSimGeometryXML.cfi"
+  
+  # Tracker Geometry Builder
+  include "Geometry/TrackerGeometryBuilder/data/trackerGeometry.cfi"
+ 
+  # Tracker Numbering Builder
+  include "Geometry/TrackerNumberingBuilder/data/trackerNumberingGeometry.cfi"
+
+  # Pixel RawToDigi conversion
+  include "EventFilter/SiPixelRawToDigi/data/SiPixelRawToDigi.cfi"
+  replace siPixelDigis.InputLabel = "source"
+
+
+ 
