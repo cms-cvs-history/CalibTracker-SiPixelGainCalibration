@@ -27,4 +27,5 @@
        untracked double maximumGain = 5.0
        untracked double maximumPedestal = 120.0
        untracked bool dummyData = false
+       untracked string rootFunctionForFit = "pol1"
   } 
