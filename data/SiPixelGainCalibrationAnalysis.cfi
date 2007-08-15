@@ -12,20 +12,17 @@
 # Database Record name...
       string record= "SiPixelGainCalibrationRcd"
       untracked bool appendDatabaseMode = false
-# maximum rows, colums, etc
-       untracked uint32 numberOfPixelRows = 160
-       untracked uint32 numberOfPixelColumns = 260
-       untracked uint32 numberOfPixelROCs = 24
-       untracked uint32 numberOfPixelFEDs = 40
-
-# some values used for the linear fit of the gain:
-       untracked uint32 cutoffVCalFit = 100 
 # lowering chi2CutoffForFileSave means more histograms are saved in root file:
-       untracked double chi2CutoffForFileSave = 3.0
+      untracked bool saveAllHistos = false
+# use dummy information. Also sets saveAllHistos to true...
+       untracked bool dummyData = false
 
 # the maximum gain/pedestal value that is used for encryption:
+# note that if these are outside this range the database value is set to very high!
        untracked double maximumGain = 5.0
        untracked double maximumPedestal = 120.0
-       untracked bool dummyData = false
+       untracked double minimumGain = 0.5
+       untracked double minimumPedestal = 20.0
+# the function used to fit the gain 	
        untracked string rootFunctionForFit = "pol1"
   } 
