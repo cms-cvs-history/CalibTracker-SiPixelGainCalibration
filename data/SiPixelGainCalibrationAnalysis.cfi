@@ -16,6 +16,7 @@
       untracked bool saveAllHistos = false
 # use dummy information. Also sets saveAllHistos to true...
        untracked bool dummyData = false
+       untracked bool onlyOneDetID = false
 
 # the maximum gain/pedestal value that is used for encryption:
 # note that if these are outside this range the database value is set to very high!
