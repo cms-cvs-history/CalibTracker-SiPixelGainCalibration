@@ -1,15 +1,6 @@
-  # cabling
-  include "CondCore/DBCommon/data/CondDBCommon.cfi"
-  replace CondDBCommon.connect = "sqlite_file:/afs/cern.ch/user/c/chiochia/public/cabling.db"
-  replace CondDBCommon.catalog = "file:/afs/cern.ch/user/c/chiochia/public/cablingCatalog.xml"
-  replace CondDBCommon.timetype = "runnumber"
-  replace CondDBCommon.DBParameters.messageLevel = 1
-  replace CondDBCommon.DBParameters.authenticationPath="."
-  es_source = PoolDBESSource {
-    using CondDBCommon
-    VPSet toGet={{string record="SiPixelFedCablingMapRcd" string tag="SiPixelFedCablingMap_v1"}}
-  }
 
+  # Pixel Cabling Map from DataBase
+  include "CalibTracker/Configuration/data/SiPixel_TIFCabling.cff"
 
   # Tracker SimGeometryXML
   include "Geometry/TrackerSimData/data/trackerSimGeometryXML.cfi"
