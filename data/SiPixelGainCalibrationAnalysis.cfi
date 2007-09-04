@@ -18,6 +18,18 @@
        untracked bool dummyData = false
        untracked bool onlyOneDetID = false
 
+#select this option to save all gain curves from a given plaquette in their own directory 
+       untracked bool saveAllGainCurvesForGivenPlaquettes = false
+       untracked vstring plaquettesToSave = {''}
+#if this parameter is selected, gain curves with bad fits will be placed in an Errors directory
+       untracked bool saveGainCurvesWithBadChi2 = false
+#set the threshold for a "bad" fit
+       untracked double maximumChi2overNDF = 4
+#if this parameter is set, low Vcal entries that are nonlinear will be removed.  The overall gain histograms will reflect only the linear region of the gain curve
+       untracked bool dropLowVcalOutliersForCurvesWithBadChi2 = false
+       untracked bool useFirstNonZeroBinForFitMin = true
+      
+
 # the maximum gain/pedestal value that is used for encryption:
 # note that if these are outside this range the database value is set to very high!
        untracked double maximumGain = 5.0
