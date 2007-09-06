@@ -37,5 +37,8 @@
        untracked double minimumGain = 0.5
        untracked double minimumPedestal = 20.0
 # the function used to fit the gain 	
-       untracked string rootFunctionForFit = "pol1"
+       untracked string rootFunctionForFitGain = "pol1"
+# use this function for scurve fits
+       untracked string rootFunctionForFitSCurve = "0.5*[2]*(1+TMath::Erf((x-[0])/([1]*sqrt(2))))"
+       untracked bool doSCurve = false
   } 
