@@ -6,6 +6,8 @@
        untracked string src = "siPixelDigi"
        untracked string InputInstance = ""
        untracked string inputFileName = "/afs/cern.ch/user/a/aryd/Pixel/forward/ryd/calib_070416a.dat"
+# flag to turn of ALL fancy stuff, and use Linear fit with very little information (for online/fast use)
+       untracked bool runOnlineConfiguration = false
 
 # parameter set from CondTools/SiPixel/ module SiPixelGalibrationService 
        using SiPixelGainCalibrationServiceParameters
@@ -32,10 +34,10 @@
 
 # the maximum gain/pedestal value that is used for encryption:
 # note that if these are outside this range the database value is set to very high!
-       untracked double maximumGain = 5.0
+       untracked double maximumGain = 10.0
        untracked double maximumPedestal = 120.0
        untracked double minimumGain = 0.5
-       untracked double minimumPedestal = 20.0
+       untracked double minimumPedestal = 10.0
 # the function used to fit the gain 	
        untracked string rootFunctionForFitGain = "pol1"
 # use this function for scurve fits
