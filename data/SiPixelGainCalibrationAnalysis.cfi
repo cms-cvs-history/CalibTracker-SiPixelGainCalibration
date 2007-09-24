@@ -1,8 +1,5 @@
 
    module SiPixelGainCalibrationAnalysis = SiPixelGainCalibrationAnalysis{
-
-
-
        untracked string src = "siPixelDigi"
        untracked string InputInstance = ""
        untracked string inputFileName = "/afs/cern.ch/user/a/aryd/Pixel/forward/ryd/calib_070416a.dat"
@@ -26,9 +23,8 @@
 #if this parameter is selected, gain curves with bad fits will be placed in an Errors directory
        untracked bool saveGainCurvesWithBadChi2 = false
 #set the threshold for a "bad" fit
-       untracked double maximumChi2overNDF = 4
+       untracked double minimumChi2prob = 0.9
 #if this parameter is set, low Vcal entries that are nonlinear will be removed.  The overall gain histograms will reflect only the linear region of the gain curve
-       untracked bool dropLowVcalOutliersForCurvesWithBadChi2 = false
        untracked bool useFirstNonZeroBinForFitMin = true
       
 
@@ -39,8 +35,8 @@
        untracked double minimumGain = 0.5
        untracked double minimumPedestal = 10.0
 # the function used to fit the gain 	
-       untracked string rootFunctionForFitGain = "pol1"
+       untracked string rootFunctionForFit = "pol1"
 # use this function for scurve fits
-       untracked string rootFunctionForFitSCurve = "0.5*[2]*(1+TMath::Erf((x-[0])/([1]*sqrt(2))))"
+       #untracked string rootFunctionForFit = "0.5*[2]*(1+TMath::Erf((x-[0])/([1]*sqrt(2))))"
        untracked bool doSCurve = false
   } 
