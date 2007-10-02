@@ -1,6 +1,5 @@
 
    module SiPixelGainCalibrationUnpackLocal = SiPixelGainCalibrationUnpackLocal{
-       untracked string inputFileName = "/afs/cern.ch/user/a/aryd/Pixel/forward/ryd/calib_070416a.dat"
        untracked string outputRootFileName = "histograms_for_monitoring.root"
        untracked uint32 numberOfPixelRows = 80
        untracked uint32 numberOfPixelColumns = 52

@@ -2,7 +2,6 @@
    module SiPixelGainCalibrationAnalysis = SiPixelGainCalibrationAnalysis{
        untracked string src = "siPixelDigi"
        untracked string InputInstance = ""
-       untracked string inputFileName = "/afs/cern.ch/user/a/aryd/Pixel/forward/ryd/calib_070416a.dat"
 # flag to turn of ALL fancy stuff, and use Linear fit with very little information (for online/fast use)
        untracked bool runOnlineConfiguration = false
 
