@@ -1,0 +1,8 @@
+<environment>
+   <use name=DataFormats/DataRecord>
+   <use name=DataFormats/SiPixelCalibDigi>
+   <use name=CalibFormats/SiPixelObjects>
+   <library file=SimpleTestPrintOutPixelCalibAnalyzer.cc name=SimpleTestPrintOutPixelCalibAnalyzer>
+      <flags EDM_PLUGIN=1>
+   </library>
+</environment>
