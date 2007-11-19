@@ -1,41 +1,14 @@
+#
+#  sipixelgaincalibrationanalysis.cfi
+#  CMSSW configuration init file for pixel gain calibrations in CMSSW>=180
+#  Original Author:  Freya Blekman
+#          Created:  November 15 2007  
+#  $Id$
+#
+#
 
-   module SiPixelGainCalibrationAnalysis = SiPixelGainCalibrationAnalysis{
-       untracked string src = "siPixelDigi"
-       untracked string InputInstance = ""
-# flag to turn of ALL fancy stuff, and use Linear fit with very little information (for online/fast use)
-       untracked bool runOnlineConfiguration = false
-
-# parameter set from CondTools/SiPixel/ module SiPixelGalibrationService 
-       using SiPixelGainCalibrationServiceParameters
-# Database Record name...
-      string record= "SiPixelGainCalibrationRcd"
-      untracked bool appendDatabaseMode = false
-# lowering chi2CutoffForFileSave means more histograms are saved in root file:
-      untracked bool saveAllHistos = false
-# use dummy information. Also sets saveAllHistos to true...
-       untracked bool dummyData = false
-       untracked bool onlyOneDetID = false
-
-#select this option to save all gain curves from a given plaquette in their own directory 
-       untracked bool saveAllGainCurvesForGivenPlaquettes = false
-       untracked vstring plaquettesToSave = {''}
-#if this parameter is selected, gain curves with bad fits will be placed in an Errors directory
-       untracked bool saveGainCurvesWithBadChi2 = false
-#set the threshold for a "bad" fit
-       untracked double minimumChi2prob = 0.9
-#if this parameter is set, low Vcal entries that are nonlinear will be removed.  The overall gain histograms will reflect only the linear region of the gain curve
-       untracked bool useFirstNonZeroBinForFitMin = true
-      
-
-# the maximum gain/pedestal value that is used for encryption:
-# note that if these are outside this range the database value is set to very high!
-       untracked double maximumGain = 10.0
-       untracked double maximumPedestal = 120.0
-       untracked double minimumGain = 0.5
-       untracked double minimumPedestal = 10.0
-# the function used to fit the gain 	
-       untracked string rootFunctionForFit = "pol1"
-# use this function for scurve fits
-       #untracked string rootFunctionForFit = "0.5*[2]*(1+TMath::Erf((x-[0])/([1]*sqrt(2))))"
-       untracked bool doSCurve = false
-  } 
+module sipixelgaincalibrationanalysis = SiPixelGainCalibrationAnalysis { 
+    untracked bool suppressZeroAndPlateausInFit=true
+    InputTag DetSetVectorSiPixelCalibDigiTag = SiPixelCalibDigiProducer
+    string outputFileName = ""
+}
