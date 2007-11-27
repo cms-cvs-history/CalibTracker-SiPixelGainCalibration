@@ -1,4 +1,4 @@
-module SiPixelCalibDigiProducer = SiPixelCalibDigiProducer{
+module siPixelCalibDigiProducer = SiPixelCalibDigiProducer{
    InputTag src = "siPixelDigis"
    string label = "siPixelCalibDigiProducer"
    string instance = "test"
