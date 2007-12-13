@@ -3,21 +3,22 @@
 #  CMSSW configuration init file for pixel gain calibrations in CMSSW>=180
 #  Original Author:  Freya Blekman
 #          Created:  November 15 2007  
-#  $Id: SiPixelGainCalibrationAnalysis.cfi,v 1.12 2007/11/19 12:17:44 fblekman Exp $
+#  $Id: SiPixelGainCalibrationAnalysis.cfi,v 1.13 2007/11/27 14:34:00 fblekman Exp $
 #
 #
 
 module siPixelGainCalibrationAnalysis = SiPixelGainCalibrationAnalysis {
     //parameters common to SiPixelOfflineCalibAnalysisBase 
-    InputTag DetSetVectorSiPixelCalibDigiTag = siPixelCalibDigiProducer
+    InputTag DetSetVectorSiPixelCalibDigiTag = siPixelCalibDigis
     string outputFileName = "" 
+    bool writeDatabase = falsexs
+    # this input combined rejects values between 0.1 and 0.9 of the full range (0-225) in the fit
+    untracked bool suppressZeroAndPlateausInFit=true
+    untracked double suppressZeroAndPlateausInFitFrac=0.1
 
     # parameter set from CondTools/SiPixel/ module SiPixelGalibrationService 
     using SiPixelGainCalibrationServiceParameters
     # Database Record name...
     string record= "SiPixelGainCalibrationRcd"
     untracked bool appendDatabaseMode = false
-    # this input combined rejects values between 0.1 and 0.9 of the full range (0-225) in the fit
-    untracked bool suppressZeroAndPlateausInFit=true
-    untracked double suppressZeroAndPlateausInFitFrac=0.1
 }

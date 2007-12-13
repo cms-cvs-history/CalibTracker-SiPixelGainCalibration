@@ -1,6 +1,7 @@
-module siPixelCalibDigiProducer = SiPixelCalibDigiProducer{
+module siPixelCalibDigis = SiPixelCalibDigiProducer{
    InputTag src = "siPixelDigis"
-   string label = "siPixelCalibDigiProducer"
+   string label = "siPixelCalibDigis"
    string instance = "test"
    bool ignoreNonPattern = true
+   bool checkPatternEachEvent = false
 }
