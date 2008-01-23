@@ -3,7 +3,7 @@
 #  CMSSW configuration init file for pixel gain calibrations in CMSSW>=180
 #  Original Author:  Freya Blekman
 #          Created:  November 15 2007  
-#  $Id: SiPixelGainCalibrationAnalysis.cfi,v 1.13 2007/11/27 14:34:00 fblekman Exp $
+#  $Id: SiPixelGainCalibrationAnalysis.cfi,v 1.14 2007/12/13 11:05:26 fblekman Exp $
 #
 #
 
@@ -11,11 +11,15 @@ module siPixelGainCalibrationAnalysis = SiPixelGainCalibrationAnalysis {
     //parameters common to SiPixelOfflineCalibAnalysisBase 
     InputTag DetSetVectorSiPixelCalibDigiTag = siPixelCalibDigis
     string outputFileName = "" 
-    bool writeDatabase = falsexs
+    untracked bool writeDatabase = false
     # this input combined rejects values between 0.1 and 0.9 of the full range (0-225) in the fit
     untracked bool suppressZeroAndPlateausInFit=true
-    untracked double suppressZeroAndPlateausInFitFrac=0.1
-
+    untracked double suppressZeroAndPlateausInFitFrac=0.2
+    # minimum chi2/NDOF at which histograms on pixel level are saved. Set to very high or -1 to disable.
+    untracked double minChi2forHistSave=10
+    # maxGainInHist fixes the range of the 1D gain summary plots to [0,maxGainInHist]
+    untracked double maxGainInHist = 10
+    untracked double maxChi2InHist = 25
     # parameter set from CondTools/SiPixel/ module SiPixelGalibrationService 
     using SiPixelGainCalibrationServiceParameters
     # Database Record name...
