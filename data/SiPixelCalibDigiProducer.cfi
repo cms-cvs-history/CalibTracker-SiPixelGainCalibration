@@ -2,6 +2,8 @@ module siPixelCalibDigis = SiPixelCalibDigiProducer{
    InputTag src = "siPixelDigis"
    string label = "siPixelCalibDigis"
    string instance = "test"
-   bool ignoreNonPattern = true
+    # setting ignoreNonPattern to true makes the production of CalibDigis significantly slower!
+   bool ignoreNonPattern = false
+    # replace set checkPatternEachEvent to false to only check on pixel patterns when filling the calib digis. setting it to true means every event will be checked. does nothing when ignoreNonPattern is true
    bool checkPatternEachEvent = false
 }
