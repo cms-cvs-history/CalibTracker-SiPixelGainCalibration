@@ -3,7 +3,7 @@
 #  CMSSW configuration init file for pixel gain calibrations in CMSSW>=180
 #  Original Author:  Freya Blekman
 #          Created:  November 15 2007  
-#  $Id: SiPixelGainCalibrationAnalysis.cfi,v 1.14 2007/12/13 11:05:26 fblekman Exp $
+#  $Id: SiPixelGainCalibrationAnalysis.cfi,v 1.15 2008/01/23 20:24:39 fblekman Exp $
 #
 #
 
@@ -11,15 +11,27 @@ module siPixelGainCalibrationAnalysis = SiPixelGainCalibrationAnalysis {
     //parameters common to SiPixelOfflineCalibAnalysisBase 
     InputTag DetSetVectorSiPixelCalibDigiTag = siPixelCalibDigis
     string outputFileName = "" 
-    untracked bool writeDatabase = false
-    # this input combined rejects values between 0.1 and 0.9 of the full range (0-225) in the fit
-    untracked bool suppressZeroAndPlateausInFit=true
-    untracked double suppressZeroAndPlateausInFitFrac=0.2
+
+    # this input combined rejects values above suppressZeroAndPlateausInFitFrac of the full range (0-225) from the fit. This effectively rejects plateau values
+    untracked bool suppressPlateauInFit=true
+    # fraction of maximum value. if 0.1 the top 0.1 fraction of the gain curve will not be included in the fit 
+    untracked double suppressZeroAndPlateausInFitFrac=0.1
+
+    # option to reject points with one entry or less (so only points with two or more are taken into account...
+    untracked bool suppressPointsWithOneEntryOrLess=true
+
     # minimum chi2/NDOF at which histograms on pixel level are saved. Set to very high or -1 to disable.
-    untracked double minChi2forHistSave=10
+    untracked double minChi2forHistSave=0.001
     # maxGainInHist fixes the range of the 1D gain summary plots to [0,maxGainInHist]
     untracked double maxGainInHist = 10
     untracked double maxChi2InHist = 25
+
+    # possiblity to save ALL gain curve histograms. Makes program slow and produces HUGE output files. 
+    # !!!Use with care!!!!
+    untracked bool saveAllHistograms= false
+    # do or dont try to access database. 'true' setting for expert use only.
+    untracked bool writeDatabase = false
+
     # parameter set from CondTools/SiPixel/ module SiPixelGalibrationService 
     using SiPixelGainCalibrationServiceParameters
     # Database Record name...
