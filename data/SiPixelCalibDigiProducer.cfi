@@ -6,4 +6,9 @@ module siPixelCalibDigis = SiPixelCalibDigiProducer{
    bool ignoreNonPattern = true
     # replace set checkPatternEachEvent to false to only check on pixel patterns when filling the calib digis. setting it to true means every event will be checked. does nothing when ignoreNonPattern is false
    bool checkPatternEachEvent = false
+    
+    # error output: it is possible to write out SiPixelRawDataErrors. Use this flag to turn this on. It will not save pixel info, only det id and fed ID.
+   untracked bool includeErrors = true
+    # the error type numbers are defined in DataFormats/SiPixelRawData/src/SiPixelRawDataError.cc (SetError() method). We will use 31 as default, this one is defined as 'event number mismatch..'
+   untracked int32 errorTypeNumber = 31 
 }
