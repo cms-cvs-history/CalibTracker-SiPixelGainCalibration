@@ -3,7 +3,7 @@
 #  CMSSW configuration init file for pixel gain calibrations in CMSSW>=180
 #  Original Author:  Freya Blekman
 #          Created:  November 15 2007  
-#  $Id: SiPixelGainCalibrationAnalysis.cfi,v 1.18 2008/02/05 15:18:49 fblekman Exp $
+#  $Id: SiPixelGainCalibrationAnalysis.cfi,v 1.19 2008/02/12 12:38:06 fblekman Exp $
 #
 #
 
@@ -11,7 +11,7 @@ module siPixelGainCalibrationAnalysis = SiPixelGainCalibrationAnalysis {
     //parameters common to SiPixelOfflineCalibAnalysisBase 
     InputTag DetSetVectorSiPixelCalibDigiTag = siPixelCalibDigis
     string outputFileName = "Pixel_DQM_Calibration.root" 
-    untracked bool saveFile = false
+    untracked bool saveFile = true
 
     # this input combined rejects values above suppressZeroAndPlateausInFitFrac of the full range (0-225) from the fit. This effectively rejects plateau values
     untracked bool suppressPlateauInFit=true
