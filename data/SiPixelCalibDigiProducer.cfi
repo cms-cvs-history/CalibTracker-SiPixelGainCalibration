@@ -3,7 +3,7 @@ module siPixelCalibDigis = SiPixelCalibDigiProducer{
    string label = "siPixelCalibDigis"
    string instance = "test"
     # force the producer to use the event numbers as in the data. If false the producer will synchronize by using its own internal counter.
-    bool useRealEventNumber = true
+    bool useRealEventNumber = false
     # setting ignoreNonPattern to true makes the production of CalibDigis significantly slower!
    bool ignoreNonPattern = true
     # replace set checkPatternEachEvent to false to only check on pixel patterns when filling the calib digis. setting it to true means every event will be checked. does nothing when ignoreNonPattern is false
