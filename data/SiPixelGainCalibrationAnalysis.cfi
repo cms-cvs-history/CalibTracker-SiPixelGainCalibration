@@ -3,7 +3,7 @@
 #  CMSSW configuration init file for pixel gain calibrations in CMSSW>=180
 #  Original Author:  Freya Blekman
 #          Created:  November 15 2007  
-#  $Id: SiPixelGainCalibrationAnalysis.cfi,v 1.19 2008/02/12 12:38:06 fblekman Exp $
+#  $Id: SiPixelGainCalibrationAnalysis.cfi,v 1.20 2008/02/22 13:30:57 fblekman Exp $
 #
 #
 
@@ -16,10 +16,12 @@ module siPixelGainCalibrationAnalysis = SiPixelGainCalibrationAnalysis {
     # this input combined rejects values above suppressZeroAndPlateausInFitFrac of the full range (0-225) from the fit. This effectively rejects plateau values
     untracked bool suppressPlateauInFit=true
     # fraction of maximum value. if 0.05 the top 0.05 fraction of the gain curve will not be included in the fit 
-    untracked double suppressZeroAndPlateausInFitFrac=0.05
+    untracked double suppressZeroAndPlateausInFitFrac=0.2
 
     # option to reject points with one entry or less (so only VCAL points with two or more adc hits are taken into account... Improves fit stability but means big errors in data might be ignored
     untracked bool suppressPointsWithOneEntryOrLess=true
+    # points close to the plateau are rejected
+    untracked double plateauSlopeMax=1.0  
 
     # minimum chi2/NDOF at which histograms on pixel level are saved. Set to very high or -1 to disable.
     untracked bool   savePixelLevelHists=false
