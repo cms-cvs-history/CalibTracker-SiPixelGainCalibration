@@ -13,7 +13,7 @@
 //
 // Original Author:  Freya BLEKMAN
 //         Created:  Tue Aug  5 16:22:46 CEST 2008
-// $Id: SiPixelGainCalibrationReadDQMFile.cc,v 1.1 2008/08/05 14:56:05 fblekman Exp $
+// $Id: SiPixelGainCalibrationReadDQMFile.h,v 1.1 2008/08/08 08:24:58 fblekman Exp $
 //
 //
 
@@ -64,12 +64,12 @@ class SiPixelGainCalibrationReadDQMFile : public edm::EDAnalyzer {
       // ----------member data ---------------------------
   edm::ParameterSet conf_;
   std::map<uint32_t,std::map<std::string,TString> > bookkeeper_; 
-  std::string  recordName_;
   bool appendMode_;
   SiPixelGainCalibration *theGainCalibrationDbInput_;
   SiPixelGainCalibrationOffline *theGainCalibrationDbInputOffline_;
   SiPixelGainCalibrationForHLT *theGainCalibrationDbInputHLT_;
   SiPixelGainCalibrationService theGainCalibrationDbInputService_;
+  std::string record_;
   // keep track of lowest and highest vals for range
   float gainlow_;
   float gainhi_;
@@ -77,7 +77,8 @@ class SiPixelGainCalibrationReadDQMFile : public edm::EDAnalyzer {
   float pedhi_;
   double gainsum_;
   double pedsum_;
-  double ntimes_;
+  double ntimesped_;
+  double ntimesgain_;
   bool usemeanwhenempty_;
   TFile *therootfile_;
   std::string rootfilestring_;

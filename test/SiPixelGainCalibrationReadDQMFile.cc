@@ -13,7 +13,7 @@
 //
 // Original Author:  Freya BLEKMAN
 //         Created:  Tue Aug  5 16:22:46 CEST 2008
-// $Id: SiPixelGainCalibrationReadDQMFile.cc,v 1.1 2008/08/05 14:56:05 fblekman Exp $
+// $Id: SiPixelGainCalibrationReadDQMFile.cc,v 1.2 2008/08/08 08:24:58 fblekman Exp $
 //
 //
 
@@ -57,6 +57,10 @@ void SiPixelGainCalibrationReadDQMFile::fillDatabase(){
   // process the minimum and maximum gain & ped values...
 
 
+  if(record_!="SiPixelGainCalibrationForHLTRcd" && record_!="SiPixelGainCalibrationOfflineRcd"){
+    std::cout << "you passed record " << record_ << ", which I have no idea what to do with!" << std::endl;
+    return;
+  }
   if(gainlow_>gainhi_){  
     float temp=gainhi_;
     gainhi_=gainlow_;
@@ -67,22 +71,25 @@ void SiPixelGainCalibrationReadDQMFile::fillDatabase(){
     pedhi_=pedlow_;
     pedlow_=temp;
   }
-  std::cout << "now filling db: values: pedlow, hi: " << pedlow_ << "," << pedhi_ << " and gainlow, hi: " << gainlow_ << "," << gainhi_ << ", and mean gain " << gainsum_/ntimes_ << ", ped " << pedsum_/ntimes_ <<  std::endl;
+  std::cout << "now filling db: values: pedlow, hi: " << pedlow_ << "," << pedhi_ << " and gainlow, hi: " << gainlow_ << "," << gainhi_ ;
+  if(usemeanwhenempty_)
+    std::cout << ", and mean gain " << gainsum_/ntimesgain_ << ", ped " << pedsum_/ntimesped_ ;
+  std::cout << std::endl;
   
-  theGainCalibrationDbInput_ = new SiPixelGainCalibration(pedlow_,pedhi_,gainlow_,gainhi_);
   theGainCalibrationDbInputHLT_ = new SiPixelGainCalibrationForHLT(pedlow_,pedhi_,gainlow_,gainhi_);
   theGainCalibrationDbInputOffline_ = new SiPixelGainCalibrationOffline(pedlow_,pedhi_,gainlow_,gainhi_);
 
   uint32_t nchannels=0;
   uint32_t nmodules=0;
-  std::cout << "now starting loop on detids" << std::endl;
+  std::cout << "now starting loop on detids, there are " << bookkeeper_.size() << " histograms to consider..." << std::endl;
   uint32_t detid=0;
   therootfile_->cd();
   for(std::map<uint32_t,std::map<std::string, TString> >::const_iterator idet=bookkeeper_.begin(); idet!= bookkeeper_.end(); ++idet){
-    
-    //    std::cout << "now creating database object for detid " << detid << " " << bookkeeper_[detid]["gain_2d"] << " " << bookkeeper_[detid]["ped_2d"] << std::endl; //std::cout<< " nrows:" << nrows << " ncols: " << ncols << std::endl;
     detid=idet->first;
-    //    edm::LogInfo("SiPixelGainCalibrationReadDQMFile") 
+    if(detid==0)
+      continue;
+    //    std::cout << "now creating database object for detid " << detid << " " << bookkeeper_[detid]["gain_2d"] << " " << bookkeeper_[detid]["ped_2d"] << std::endl; //std::cout<< " nrows:" << nrows << " ncols: " << ncols << std::endl;
+
     // Get the module sizes.
     TString tempgainstring = bookkeeper_[detid]["gain_2d"];
     TH2F *tempgain = (TH2F*)therootfile_->Get(tempgainstring);
@@ -96,101 +103,128 @@ void SiPixelGainCalibrationReadDQMFile::fillDatabase(){
       std::cout <<"ERROR, ped histo " << bookkeeper_[detid]["ped_2d"] << " does not exist" << std::endl;
       continue;
     }
-    int nrows=tempgain->GetNbinsX();
-    int ncols=tempgain->GetNbinsY();
+    int nrows=tempgain->GetNbinsY();
+    int ncols=tempgain->GetNbinsX();
+    //    std::cout << "next histo " << tempgain->GetTitle() << " has nrow,ncol:" << nrows << ","<< ncols << std::endl;
+    size_t nrowsrocsplit = theGainCalibrationDbInputHLT_->getNumberOfRowsToAverageOver();
+    if(theGainCalibrationDbInputOffline_->getNumberOfRowsToAverageOver()!=nrowsrocsplit)
+      throw  cms::Exception("GainCalibration Payload configuration error")
+	<< "[SiPixelGainCalibrationAnalysis::fillDatabase] ERROR the SiPixelGainCalibrationOffline and SiPixelGainCalibrationForHLT database payloads have different settings for the number of rows per roc: " << theGainCalibrationDbInputHLT_->getNumberOfRowsToAverageOver() << "(HLT), " << theGainCalibrationDbInputOffline_->getNumberOfRowsToAverageOver() << "(offline)";
     std::vector<char> theSiPixelGainCalibrationPerPixel;
     std::vector<char> theSiPixelGainCalibrationPerColumn;
     std::vector<char> theSiPixelGainCalibrationGainPerColPedPerPixel;
     
     // Loop over columns and rows of this DetID
-    for(int i=1; i<=ncols; i++) {
-      float pedforthiscol=0;
-      float gainforthiscol=0;
-      int nusedrows=0;
+    for(int icol=1; icol<=ncols; icol++) {
+      float pedforthiscol[2]={0,0};
+      float gainforthiscol[2]={0,0};
+      int nusedrows[2]={0,0};
       //      std::cout << "now lookign at col " << i << std::endl;
-      for(int j=1; j<=nrows; j++) {
+      for(int jrow=1; jrow<=nrows; jrow++) {
 	nchannels++;
-	float ped = tempped->GetBinContent(i,j);
-	float gain = tempgain->GetBinContent(i,j);
-	
-	if(usemeanwhenempty_ && ped<0.00001 && gain<0.00001){
-	  ped=pedsum_/ntimes_;
-	  gain=gainsum_/ntimes_;
-	}
-	//	std::cout << "looking at pixel row,col " << j << ","<<i << " gain,ped=" <<gain << "," << ped << std::endl;
-	// and fill and convert in the SiPixelGainCalibration object:
-	theGainCalibrationDbInput_->setData(ped,gain,theSiPixelGainCalibrationPerPixel);
-	theGainCalibrationDbInputOffline_->setDataPedestal(ped, theSiPixelGainCalibrationGainPerColPedPerPixel);
-	//	std::cout <<"done with database filling..." << std::endl;
+	int iglobalrow=0;
+	if(jrow>nrowsrocsplit)
+	  iglobalrow=1;
 
-	pedforthiscol+=ped;
-	gainforthiscol+=gain;
-	nusedrows++;
-      }
-      if(nusedrows>0){
-	pedforthiscol/=nusedrows;
-	gainforthiscol/=nusedrows;
-      }
-      //      std::cout << "filling objects..." << std::endl;
-      theGainCalibrationDbInputOffline_->setDataGain(gainforthiscol,nrows,theSiPixelGainCalibrationGainPerColPedPerPixel);
-      theGainCalibrationDbInputHLT_->setData(pedforthiscol,gainforthiscol,theSiPixelGainCalibrationPerColumn);
+	float ped = tempped->GetBinContent(jrow,icol);
+	float gain = tempgain->GetBinContent(jrow,icol);
+	//	std::cout << ped << " " << gain << " ";
+	if(usemeanwhenempty_ && ped<0.00001 && gain<0.00001 && ntimesgain_>0 && ntimesped_>0){
+	  //	  std::cout << "USING DEFAULT MEAN GAIN & PED!" << std::endl;
+	  ped=pedsum_/ntimesped_;
+	  gain=gainsum_/ntimesgain_;
+	}
 	
+	if(ped==0 && gain==0){// dead pixel
+	  //	  std::cout << "dead!" << std::endl;
+	  theGainCalibrationDbInputOffline_->setDeadPixel(theSiPixelGainCalibrationGainPerColPedPerPixel);
+	}
+	else{// pixel not dead
+	  theGainCalibrationDbInputOffline_->setDataPedestal(ped, theSiPixelGainCalibrationGainPerColPedPerPixel);
+	
+	  //std::cout <<"done with database filling..." << std::endl;
+
+	  pedforthiscol[iglobalrow]+=ped;
+	  gainforthiscol[iglobalrow]+=gain;
+	  nusedrows[iglobalrow]++;
+	}  
+	//	std::cout << "column ave gain,ped " << gainforthiscol[iglobalrow] << "," <<  pedforthiscol[iglobalrow] << " globalrow=" << iglobalrow << " row = " << jrow << " col = " << icol << std::endl;
+	if(jrow%nrowsrocsplit==0){ 
+	  //	  std::cout << "column ave gain,ped " << gainforthiscol[iglobalrow] << "," <<  pedforthiscol[iglobalrow] << " globalrow=" << iglobalrow << " row = " << jrow << " col = " << icol << std::endl; 
+	  if(nusedrows[iglobalrow]>0){// good column
+	    pedforthiscol[iglobalrow]/=(float)nusedrows[iglobalrow];
+	    gainforthiscol[iglobalrow]/=(float)nusedrows[iglobalrow];
+	  
+	    theGainCalibrationDbInputOffline_->setDataGain(gainforthiscol[iglobalrow],nrowsrocsplit,theSiPixelGainCalibrationGainPerColPedPerPixel);
+	    theGainCalibrationDbInputHLT_->setData(pedforthiscol[iglobalrow],gainforthiscol[iglobalrow],theSiPixelGainCalibrationPerColumn);
+	  }
+	  else{// dead column!
+	    //  std::cout << "dead column ave gain,ped " << gainforthiscol[iglobalrow] << "," <<  pedforthiscol[iglobalrow] << " globalrow=" << iglobalrow << " row = " << jrow << " col = " << icol << std::endl; 
+	    //	    std::cout << "dead column!" << std::endl;
+	    theGainCalibrationDbInputOffline_->setDeadColumn(nrowsrocsplit,theSiPixelGainCalibrationGainPerColPedPerPixel);
+	    theGainCalibrationDbInputHLT_->setDeadColumn(nrowsrocsplit,theSiPixelGainCalibrationPerColumn);
+	  }
+	}
+      }
     }
 
-    //    std::cout << "setting range..." << std::endl;
+    std::cout << "setting range..." << std::endl;
     SiPixelGainCalibration::Range range(theSiPixelGainCalibrationPerPixel.begin(),theSiPixelGainCalibrationPerPixel.end());
     SiPixelGainCalibrationForHLT::Range hltrange(theSiPixelGainCalibrationPerColumn.begin(),theSiPixelGainCalibrationPerColumn.end());
     SiPixelGainCalibrationOffline::Range offlinerange(theSiPixelGainCalibrationGainPerColPedPerPixel.begin(),theSiPixelGainCalibrationGainPerColPedPerPixel.end());
     
-    std::cout <<"putting things in db..." << std::endl;
+    //    std::cout <<"putting things in db..." << std::endl;
     // now start creating the various database objects
-    if( !theGainCalibrationDbInput_->put(detid,range,ncols) )
-      edm::LogError("SiPixelGainCalibrationReadDQMFile")<<"warning: detid already exists for Pixel-level calibration database"<<std::endl;
     if( !theGainCalibrationDbInputOffline_->put(detid,offlinerange,ncols) )
-      edm::LogError("SiPixelGainCalibrationReadDQMFile")<<"warning: detid already exists for Offline (gain per col, ped per pixel) calibration database"<<std::endl;
-    if(!theGainCalibrationDbInputHLT_->put(detid,hltrange) )
-      edm::LogError("SiPixelGainCalibrationReadDQMFile")<<"warning: detid already exists for HLT (pedestal and gain per column) calibration database"<<std::endl;
+      edm::LogError("SiPixelGainCalibrationAnalysis")<<"warning: detid already exists for Offline (gain per col, ped per pixel) calibration database"<<std::endl;
+    if(!theGainCalibrationDbInputHLT_->put(detid,hltrange, ncols) )
+      edm::LogError("SiPixelGainCalibrationAnalysis")<<"warning: detid already exists for HLT (pedestal and gain per column) calibration database"<<std::endl;
   }
   
-  //  edm::LogInfo("SiPixelGainCalibrationReadDQMFile") << " ---> PIXEL Modules  " << nmodules  << "\n"
-  //						 << " ---> PIXEL Channels " << nchannels << std::endl;
+  std::cout << " ---> PIXEL Modules  " << nmodules  << "\n"
+						 << " ---> PIXEL Channels " << nchannels << std::endl;
 
- //  edm::LogInfo(" --- writing to DB!");
+  std::cout << " --- writing to DB!" << std::endl;
   edm::Service<cond::service::PoolDBOutputService> mydbservice;
   if(!mydbservice.isAvailable() ){
     edm::LogError("db service unavailable");
     return;
   }
   else{
-    if(mydbservice->isNewTagRequest("SiPixelGainCalibrationOfflineRcd") ){
-      
-      mydbservice->createNewIOV<SiPixelGainCalibrationOffline>(
-							       theGainCalibrationDbInputOffline_,
-							       mydbservice->beginOfTime(),
-							       mydbservice->endOfTime(),
-							       "SiPixelGainCalibrationOfflineRcd");
-      
-    }
-    else{
-      mydbservice->appendSinceTime<SiPixelGainCalibrationOffline>(
-							       theGainCalibrationDbInputOffline_,
-							       mydbservice->currentTime(),
-							       "SiPixelGainCalibrationOfflineRcd");
-      
-    } 
-    
-    if(mydbservice->isNewTagRequest("SiPixelGainCalibrationForHLTRcd") ){
-      mydbservice->createNewIOV<SiPixelGainCalibrationForHLT>(
-							      theGainCalibrationDbInputHLT_,
-							      mydbservice->beginOfTime(),
-							      mydbservice->endOfTime(), 
-							      "SiPixelGainCalibrationForHLTRcd");
-    }
-    else{
+    if(record_=="SiPixelGainCalibrationForHLTRcd"){
+      std::cout << "now doing SiPixelGainCalibrationForHLTRcd payload..." << std::endl;
+      if( mydbservice->isNewTagRequest(record_) ){
+	mydbservice->createNewIOV<SiPixelGainCalibrationForHLT>(
+								theGainCalibrationDbInputHLT_,
+								mydbservice->beginOfTime(),
+								mydbservice->endOfTime(),
+								"SiPixelGainCalibrationForHLTRcd");
+      }
+      else{
+
       mydbservice->appendSinceTime<SiPixelGainCalibrationForHLT>(
-								 theGainCalibrationDbInputHLT_,
+								 theGainCalibrationDbInputHLT_, 
 								 mydbservice->currentTime(),
 								 "SiPixelGainCalibrationForHLTRcd");
+      
+      }
+    }
+    else if (record_=="SiPixelGainCalibrationOfflineRcd"){
+      std::cout << "now doing SiPixelGainCalibrationOfflineRcd payload..." << std::endl; 
+      if( mydbservice->isNewTagRequest(record_) ){
+	mydbservice->createNewIOV<SiPixelGainCalibrationOffline>(
+								 theGainCalibrationDbInputOffline_,
+								 mydbservice->beginOfTime(),
+								 mydbservice->endOfTime(),
+								 "SiPixelGainCalibrationOfflineRcd");
+      }
+      else{
+	mydbservice->appendSinceTime<SiPixelGainCalibrationOffline>(
+								    theGainCalibrationDbInputOffline_, 
+								    mydbservice->currentTime(),
+								    "SiPixelGainCalibrationOfflineRcd");
+	
+      }
     }
     edm::LogInfo(" --- all OK");
   } 
@@ -205,7 +239,8 @@ SiPixelGainCalibrationReadDQMFile::SiPixelGainCalibrationReadDQMFile(const edm::
   theGainCalibrationDbInputHLT_(0),
   theGainCalibrationDbInputService_(iConfig),
   usemeanwhenempty_(conf_.getUntrackedParameter<bool>("useMeanWhenEmpty",false)),
-  gainlow_(10.),gainhi_(0.),pedlow_(255.),pedhi_(0.),gainsum_(0.),pedsum_(0.),ntimes_(0)
+  record_(conf_.getUntrackedParameter<std::string>("record","SiPixelGainCalibrationOfflineRcd")),
+  gainlow_(10.),gainhi_(0.),pedlow_(255.),pedhi_(0.),gainsum_(0.),pedsum_(0.),ntimesped_(0),ntimesgain_(0)
   
   
 {
@@ -354,15 +389,6 @@ SiPixelGainCalibrationReadDQMFile::getHistograms(){
       TString keyname=thekey->GetName();
       TString keytype=thekey->GetClassName();
       //	std::cout << keyname << " " << keytype << std::endl;
-      if(keytype=="TH1F" && keyname.Contains("Gain1d")){
-	TH1F *thehist = (TH1F*) dir->Get(keyname);
-	gainsum_+=thehist->GetMean();
-	ntimes_++;
-      }
-      if(keytype=="TH1F" && keyname.Contains("Pedestal1d")){
-	TH1F *thehist = (TH1F*) dir->Get(keyname);
-	pedsum_+=thehist->GetMean();
-      }
       if(keytype=="TH2F" && (keyname.Contains("Gain2d")||keyname.Contains("Pedestal2d"))){
 	TString detidstring = keyname;
 	detidstring.Remove(0,detidstring.Sizeof()-10);
@@ -371,7 +397,7 @@ SiPixelGainCalibrationReadDQMFile::getHistograms(){
 	  
 	if(keyname.Contains("Gain2d")){
 	  
-	  std::cout << dirlist[idir] << std::endl;
+	  //	  std::cout << dirlist[idir] << std::endl;
 	  std::map<std::string,TString> tempmap;
 	  TString tempstr =dirlist[idir];
 	  tempstr+="/";
@@ -387,9 +413,19 @@ SiPixelGainCalibrationReadDQMFile::getHistograms(){
 	    gainlow_=temphisto->GetMinimum();
 	  if(gainhi_<temphisto->GetMaximum())
 	    gainhi_=temphisto->GetMaximum();
+	  if(usemeanwhenempty_){
+	    for(int xbin=1; xbin<=temphisto->GetNbinsX(); ++xbin){
+	      for(int ybin=1; ybin<=temphisto->GetNbinsY(); ++ybin){
+		if(temphisto->GetBinContent(xbin,ybin)>0.){
+		  gainsum_+=temphisto->GetBinContent(xbin,ybin);
+		  ntimesgain_++;
+		}
+	      }
+	    }
+	  }
 	}
 	if(keyname.Contains("Pedestal2d")){
-	  std::cout << dirlist[idir] << std::endl;
+	  //	  std::cout << dirlist[idir] << std::endl;
 	  std::map<std::string,TString> tempmap;
 	  
 	  TString tempstr =dirlist[idir];
@@ -407,6 +443,16 @@ SiPixelGainCalibrationReadDQMFile::getHistograms(){
 	  if(pedhi_<temphisto->GetMaximum())
 	    pedhi_=temphisto->GetMaximum();
 
+	  if(usemeanwhenempty_){
+	    for(int xbin=1; xbin<=temphisto->GetNbinsX(); ++xbin){
+	      for(int ybin=1; ybin<=temphisto->GetNbinsY(); ++ybin){
+		if(temphisto->GetBinContent(xbin,ybin)>0.){
+		  pedsum_+=temphisto->GetBinContent(xbin,ybin);
+		  ntimesped_++;
+		}
+	      }
+	    }
+	  }
 	}
 	//   	std::cout << keyname << " " << keytype << std::endl;
       }
