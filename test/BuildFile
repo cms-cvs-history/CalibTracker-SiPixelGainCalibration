@@ -1,10 +1,7 @@
-<use name=DataFormats/SiPixelDigi>
-<use name=CalibFormats/SiPixelObjects>
-<use name=CondFormats/SiPixelObjects>
-<use name=CondTools/SiPixel>
-<use name=CondCore/DBOutputService>
-<use name=root>
-<library file=*.cc name=testCalibTrackerSiPixelGainCalibration>
-   <flags EDM_PLUGIN=1>
-</library>
-
+<environment>
+   <use name=DataFormats/SiPixelDigi>
+   <use name=CalibFormats/SiPixelObjects>
+   <library file=SimpleTestPrintOutPixelCalibAnalyzer.cc name=SimpleTestPrintOutPixelCalibAnalyzer>
+      <flags EDM_PLUGIN=1>
+   </library>
+</environment>
