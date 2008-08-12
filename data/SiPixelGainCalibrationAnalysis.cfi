@@ -3,7 +3,7 @@
 #  CMSSW configuration init file for pixel gain calibrations in CMSSW>=180
 #  Original Author:  Freya Blekman
 #          Created:  November 15 2007  
-#  $Id: SiPixelGainCalibrationAnalysis.cfi,v 1.20 2008/02/22 13:30:57 fblekman Exp $
+#  $Id: SiPixelGainCalibrationAnalysis.cfi,v 1.21 2008/07/23 10:39:59 fblekman Exp $
 #
 #
 
@@ -25,6 +25,7 @@ module siPixelGainCalibrationAnalysis = SiPixelGainCalibrationAnalysis {
 
     # minimum chi2/NDOF at which histograms on pixel level are saved. Set to very high or -1 to disable.
     untracked bool   savePixelLevelHists=false
+    untracked vuint32 listOfDetIDs = {}
     untracked double minChi2ProbforHistSave=0.001
     untracked double minChi2NDFforHistSave=25.
     # maxGainInHist fixes the range of the 1D gain summary plots to [0,maxGainInHist]
