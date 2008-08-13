@@ -5,13 +5,13 @@ process.load("CondTools.SiPixel.SiPixelGainCalibrationService_cfi")
 
 
 process.readfileOffline = cms.EDFilter("SiPixelGainCalibrationReadDQMFile",
-    inputrootfile = cms.untracked.string('DQM_Gain_Run3233.root'),
+    inputrootfile = cms.untracked.string('DQM_Gain_Run54974.root'),
     record = cms.untracked.string('SiPixelGainCalibrationOfflineRcd'),
     useMeanWhenEmpty = cms.untracked.bool(True)                                     
 )
 
 process.readfileHLT = cms.EDFilter("SiPixelGainCalibrationReadDQMFile",
-    inputrootfile = cms.untracked.string('DQM_Gain_Run3233.root'),
+    inputrootfile = cms.untracked.string('DQM_Gain_Run54974.root'),
     record = cms.untracked.string('SiPixelGainCalibrationForHLTRcd'),
     useMeanWhenEmpty = cms.untracked.bool(True)                      
 )

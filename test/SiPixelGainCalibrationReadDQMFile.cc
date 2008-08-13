@@ -13,7 +13,7 @@
 //
 // Original Author:  Freya BLEKMAN
 //         Created:  Tue Aug  5 16:22:46 CEST 2008
-// $Id: SiPixelGainCalibrationReadDQMFile.cc,v 1.2 2008/08/08 08:24:58 fblekman Exp $
+// $Id: SiPixelGainCalibrationReadDQMFile.cc,v 1.3 2008/08/08 14:45:44 fblekman Exp $
 //
 //
 
@@ -281,10 +281,13 @@ SiPixelGainCalibrationReadDQMFile::beginJob(const edm::EventSetup&)
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
-void 
-SiPixelGainCalibrationReadDQMFile::endJob() {
+void SiPixelGainCalibrationReadDQMFile::beginRun(const edm::Run &run, const edm::EventSetup& iSetup){
   getHistograms();
   fillDatabase();
+}
+
+void 
+SiPixelGainCalibrationReadDQMFile::endJob() {
 }
 void 
 SiPixelGainCalibrationReadDQMFile::getHistograms(){
