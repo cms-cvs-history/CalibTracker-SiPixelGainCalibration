@@ -13,7 +13,7 @@
 //
 // Original Author:  Freya BLEKMAN
 //         Created:  Tue Aug  5 16:22:46 CEST 2008
-// $Id: SiPixelGainCalibrationReadDQMFile.h,v 1.2 2008/08/08 14:45:44 fblekman Exp $
+// $Id: SiPixelGainCalibrationReadDQMFile.h,v 1.3 2008/08/13 17:13:08 fblekman Exp $
 //
 //
 
@@ -56,7 +56,6 @@ class SiPixelGainCalibrationReadDQMFile : public edm::EDAnalyzer {
 
    private:
       virtual void beginJob(const edm::EventSetup&) ;
-  virtual void beginRun(const edm::Run &, const edm::EventSetup&);
       virtual void analyze(const edm::Event&, const edm::EventSetup&);
       virtual void endJob() ;
   // functions added by F.B.
@@ -71,6 +70,7 @@ class SiPixelGainCalibrationReadDQMFile : public edm::EDAnalyzer {
   SiPixelGainCalibrationForHLT *theGainCalibrationDbInputHLT_;
   SiPixelGainCalibrationService theGainCalibrationDbInputService_;
   std::string record_;
+  bool invertgain_;
   // keep track of lowest and highest vals for range
   float gainlow_;
   float gainhi_;
