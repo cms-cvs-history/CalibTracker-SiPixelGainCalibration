@@ -13,7 +13,7 @@
 //
 // Original Author:  Freya BLEKMAN
 //         Created:  Tue Aug  5 16:22:46 CEST 2008
-// $Id: SiPixelGainCalibrationReadDQMFile.cc,v 1.5 2008/08/15 09:40:24 fblekman Exp $
+// $Id: SiPixelGainCalibrationReadDQMFile.cc,v 1.6 2008/08/18 06:16:51 fblekman Exp $
 //
 //
 
@@ -164,9 +164,7 @@ void SiPixelGainCalibrationReadDQMFile::fillDatabase(const edm::EventSetup& iSet
 	float ped = tempped->GetBinContent(jrow,icol);
 	float gain = tempgain->GetBinContent(jrow,icol);
 	usedmean=false;
-	if(invertgain_ && gain > 0.)
-	  gain = 1. / gain;
-	//	std::cout << ped << " " << gain << " ";
+
 	if(usemeanwhenempty_ && ped<0.00001 && gain<0.00001 && ntimesgain_>0 && ntimesped_>0){
 	  usedmean=true;
 	  //	  std::cout << "USING DEFAULT MEAN GAIN & PED!" << std::endl;
@@ -284,7 +282,6 @@ SiPixelGainCalibrationReadDQMFile::SiPixelGainCalibrationReadDQMFile(const edm::
   theGainCalibrationDbInputService_(iConfig),
   usemeanwhenempty_(conf_.getUntrackedParameter<bool>("useMeanWhenEmpty",false)),
   record_(conf_.getUntrackedParameter<std::string>("record","SiPixelGainCalibrationOfflineRcd")),
-  invertgain_(conf_.getUntrackedParameter<bool>("invertGain",false)),
   gainlow_(10.),gainhi_(0.),pedlow_(255.),pedhi_(0.),gainsum_(0.),pedsum_(0.),ntimesped_(0),ntimesgain_(0)
   
   
@@ -356,8 +353,8 @@ SiPixelGainCalibrationReadDQMFile::getHistograms(){
       continue;
     TString keyname=thekey->GetName();
     TString keytype=thekey->GetClassName();
-    if(keyname=="EventInfo")
-      continue;
+    //    if(keyname=="EventInfo")
+    //      continue;
     //    std::cout <<  keytype << " " << keyname << std::endl;
     if(keytype=="TDirectoryFile"){
       TString dirname=dir->GetPath();
@@ -454,32 +451,17 @@ SiPixelGainCalibrationReadDQMFile::getHistograms(){
 	  bookkeeper_[detid]["gain_2d"]=tempstr;
 	  TH2F *temphisto = (TH2F*)therootfile_->Get(bookkeeper_[detid]["gain_2d"]);
 	  //std::cout << detidstring << " " << keyname << " " << detid << " " << bookkeeper_[detid]["gain_2d"] << std::endl ;
-	  if(invertgain_){
-	    float minimum  =temphisto->GetMaximum();
-	    if(minimum>0.)
-	      minimum = 1./minimum;
-	    float maximum  =temphisto->GetMinimum();
-	    if(maximum>0.)
-	      maximum = 1./maximum;
-	    if(minimum<gainlow_)
-	      gainlow_=minimum;
-	    if(gainhi_<maximum)
-	      gainhi_=maximum;
-	  }
-	  else{
-	    if(temphisto->GetMinimum()<gainlow_)
-	      gainlow_=temphisto->GetMinimum();
-	    if(gainhi_<temphisto->GetMaximum())
-	      gainhi_=temphisto->GetMaximum();
-	  }
+
+	  if(temphisto->GetMinimum()<gainlow_)
+	    gainlow_=temphisto->GetMinimum();
+	  if(gainhi_<temphisto->GetMaximum())
+	    gainhi_=temphisto->GetMaximum();
+
 	  if(usemeanwhenempty_){
 	    for(int xbin=1; xbin<=temphisto->GetNbinsX(); ++xbin){
 	      for(int ybin=1; ybin<=temphisto->GetNbinsY(); ++ybin){
 		if(temphisto->GetBinContent(xbin,ybin)>0.){
 		  float val = temphisto->GetBinContent(xbin,ybin);
-		    
-		  if(invertgain_ && val>0)
-		    val = 1./ val;
 		  gainsum_+= val;
 		  ntimesgain_++;
 		}
