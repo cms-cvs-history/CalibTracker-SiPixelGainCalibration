@@ -3,7 +3,7 @@
 #  CMSSW configuration init file for pixel gain calibrations in CMSSW>=180
 #  Original Author:  Freya Blekman
 #          Created:  November 15 2007  
-#  $Id: SiPixelGainCalibrationAnalysis.cfi,v 1.22 2008/08/12 15:39:10 fblekman Exp $
+#  $Id: SiPixelGainCalibrationAnalysis.cfi,v 1.23 2008/08/18 10:49:26 fblekman Exp $
 #
 #
 
@@ -43,7 +43,7 @@ module siPixelGainCalibrationAnalysis = SiPixelGainCalibrationAnalysis {
     # Database Record name...
     string record= "SiPixelGainCalibrationRcd"
     untracked bool appendDatabaseMode = false
-    bool useVCALHIGH = true,
+    bool useVCALHIGH = true
     # conversion factor to go from VCAL_HIGH to VCAL_LOW. Current best estimate: VCAL_HIGH = 7 * VCAL_LOW 
     double vcalHighToLowConversionFac = 7.0                                          
 )
