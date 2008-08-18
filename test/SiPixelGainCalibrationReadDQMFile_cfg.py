@@ -2,16 +2,20 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("test")
 process.load("CondTools.SiPixel.SiPixelGainCalibrationService_cfi")
-
+process.load("Configuration.StandardSequences.Geometry_cff")
+process.load("Geometry.TrackerGeometryBuilder.trackerGeometry_cfi")
+process.load("Geometry.TrackerGeometryBuilder.idealForDigiTrackerGeometry_cff")
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+process.GlobalTag.globaltag = "STARTUP_V4::All"
 
 process.readfileOffline = cms.EDFilter("SiPixelGainCalibrationReadDQMFile",
-    inputrootfile = cms.untracked.string('DQM_Gain_Run54974.root'),
+    inputrootfile = cms.untracked.string('DQM_GainCalibration_Run54974.root'),
     record = cms.untracked.string('SiPixelGainCalibrationOfflineRcd'),
     useMeanWhenEmpty = cms.untracked.bool(True)                                     
 )
 
 process.readfileHLT = cms.EDFilter("SiPixelGainCalibrationReadDQMFile",
-    inputrootfile = cms.untracked.string('DQM_Gain_Run54974.root'),
+    inputrootfile = cms.untracked.string('DQM_GainCalibration_Run54974.root'),
     record = cms.untracked.string('SiPixelGainCalibrationForHLTRcd'),
     useMeanWhenEmpty = cms.untracked.bool(True)                      
 )
@@ -36,11 +40,11 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
     toPut = cms.VPSet(
         cms.PSet(
             record = cms.string('SiPixelGainCalibrationForHLTRcd'),
-            tag = cms.string('GainCalib_TESTHLT')
+            tag = cms.string('GainCalib_TESTHLT2')
         ), 
         cms.PSet(
             record = cms.string('SiPixelGainCalibrationOfflineRcd'),
-            tag = cms.string('GainCalib_TESTOFFLINE')
+            tag = cms.string('GainCalib_TESTOFFLINE2')
         )
     ),
     connect = cms.string('sqlite_file:prova_rawdata.db')

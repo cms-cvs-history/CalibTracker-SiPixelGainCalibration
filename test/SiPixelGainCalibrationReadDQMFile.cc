@@ -13,7 +13,7 @@
 //
 // Original Author:  Freya BLEKMAN
 //         Created:  Tue Aug  5 16:22:46 CEST 2008
-// $Id: SiPixelGainCalibrationReadDQMFile.cc,v 1.4 2008/08/13 17:13:08 fblekman Exp $
+// $Id: SiPixelGainCalibrationReadDQMFile.cc,v 1.5 2008/08/15 09:40:24 fblekman Exp $
 //
 //
 
@@ -37,6 +37,10 @@
 #include "CondTools/SiPixel/interface/SiPixelGainCalibrationService.h"
 #include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
 
+#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
+#include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h"
+#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
+#include "Geometry/CommonTopologies/interface/PixelTopology.h"
 
 #include "TH2F.h"
 #include "TFile.h"
@@ -53,7 +57,7 @@
 //
 
 
-void SiPixelGainCalibrationReadDQMFile::fillDatabase(){
+void SiPixelGainCalibrationReadDQMFile::fillDatabase(const edm::EventSetup& iSetup){
  // only create when necessary.
   // process the minimum and maximum gain & ped values...
 
@@ -82,6 +86,20 @@ void SiPixelGainCalibrationReadDQMFile::fillDatabase(){
     std::cout << ", and mean gain " << gainsum_/ntimesgain_ << ", ped " << pedsum_/ntimesped_ ;
   std::cout << std::endl;
   
+  size_t nmaxcols=10*52;
+  size_t nmaxrows=2*80;
+  defaultGain_=new TH2F("defaultGain","default gain, contains mean",nmaxcols,0,nmaxcols,nmaxrows,0,nmaxrows);// using dummy (largest) module size
+  defaultPed_=new TH2F("defaultPed","default pedestal, contains mean",nmaxcols,0,nmaxcols,nmaxrows,0,nmaxrows);// using dummy (largest) module size
+  // and fill those:
+  float meangain=gainsum_/ntimesgain_;
+  float meanped =pedsum_/ntimesped_;
+  
+  for(int icol=0; icol<nmaxcols;++icol){
+    for(int irow=0; irow<nmaxrows; ++irow){
+      defaultGain_->SetBinContent(icol+1,irow+1,meangain);
+      defaultPed_->SetBinContent(icol+1,irow+1,meanped);
+    }
+  }
   theGainCalibrationDbInputHLT_ = new SiPixelGainCalibrationForHLT(pedlow_,pedhi_,gainlow_,gainhi_);
   theGainCalibrationDbInputOffline_ = new SiPixelGainCalibrationOffline(pedlow_,pedhi_,gainlow_,gainhi_);
 
@@ -90,8 +108,14 @@ void SiPixelGainCalibrationReadDQMFile::fillDatabase(){
   std::cout << "now starting loop on detids, there are " << bookkeeper_.size() << " histograms to consider..." << std::endl;
   uint32_t detid=0;
   therootfile_->cd();
-  for(std::map<uint32_t,std::map<std::string, TString> >::const_iterator idet=bookkeeper_.begin(); idet!= bookkeeper_.end(); ++idet){
-    detid=idet->first;
+  edm::ESHandle<TrackerGeometry> pDD;
+  iSetup.get<TrackerDigiGeometryRecord>().get( pDD );     
+  edm::LogInfo("SiPixelCondObjOfflineBuilder") <<" There are "<<pDD->dets().size() <<" detectors"<<std::endl;
+  
+  for(TrackerGeometry::DetContainer::const_iterator it = pDD->dets().begin(); it != pDD->dets().end(); it++){
+    detid=0;
+    if( dynamic_cast<PixelGeomDetUnit*>((*it))!=0)
+      detid=((*it)->geographicalId()).rawId();
     if(detid==0)
       continue;
     //    std::cout << "now creating database object for detid " << detid << " " << bookkeeper_[detid]["gain_2d"] << " " << bookkeeper_[detid]["ped_2d"] << std::endl; //std::cout<< " nrows:" << nrows << " ncols: " << ncols << std::endl;
@@ -100,17 +124,22 @@ void SiPixelGainCalibrationReadDQMFile::fillDatabase(){
     TString tempgainstring = bookkeeper_[detid]["gain_2d"];
     TH2F *tempgain = (TH2F*)therootfile_->Get(tempgainstring);
     if(tempgain==0){
-      std::cout <<"ERROR, gain histo " << bookkeeper_[detid]["gain_2d"] << " does not exist" << std::endl;
-      continue;
+      std::cout <<"WARNING, gain histo " << bookkeeper_[detid]["gain_2d"] << " does not exist, using default instead" << std::endl;
+      tempgain=defaultGain_;   
     }
     TString temppedstring = bookkeeper_[detid]["ped_2d"];
     TH2F *tempped = (TH2F*) therootfile_->Get(temppedstring);
     if(tempped==0){
-      std::cout <<"ERROR, ped histo " << bookkeeper_[detid]["ped_2d"] << " does not exist" << std::endl;
-      continue;
+      std::cout <<"WARNING, ped histo " << bookkeeper_[detid]["ped_2d"] << " does not exist, using default instead" << std::endl;
+      tempped=defaultPed_;
     }
-    int nrows=tempgain->GetNbinsY();
-    int ncols=tempgain->GetNbinsX();
+    const PixelGeomDetUnit * pixDet  = dynamic_cast<const PixelGeomDetUnit*>((*it));
+    const PixelTopology & topol = pixDet->specificTopology();       
+    // Get the module sizes.
+    int nrows = topol.nrows();      // rows in x
+    int ncols = topol.ncolumns();   // cols in y
+    //    int nrows=tempgain->GetNbinsY();
+    //    int ncols=tempgain->GetNbinsX();
     //    std::cout << "next histo " << tempgain->GetTitle() << " has nrow,ncol:" << nrows << ","<< ncols << std::endl;
     size_t nrowsrocsplit = theGainCalibrationDbInputHLT_->getNumberOfRowsToAverageOver();
     if(theGainCalibrationDbInputOffline_->getNumberOfRowsToAverageOver()!=nrowsrocsplit)
@@ -141,8 +170,8 @@ void SiPixelGainCalibrationReadDQMFile::fillDatabase(){
 	if(usemeanwhenempty_ && ped<0.00001 && gain<0.00001 && ntimesgain_>0 && ntimesped_>0){
 	  usedmean=true;
 	  //	  std::cout << "USING DEFAULT MEAN GAIN & PED!" << std::endl;
-	  ped=pedsum_/ntimesped_;
-	  gain=gainsum_/ntimesgain_;
+	  ped=meanped;
+	  gain=meangain;
 	}
 	
 	if(ped==0 && gain==0){// dead pixel
@@ -285,7 +314,7 @@ void
 SiPixelGainCalibrationReadDQMFile::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   getHistograms();
-  fillDatabase();
+  fillDatabase(iSetup);
   // empty but should not be called anyway
 }
 
