@@ -9,22 +9,24 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.GlobalTag.globaltag = "STARTUP_V4::All"
 
 process.readfileOffline = cms.EDFilter("SiPixelGainCalibrationReadDQMFile",
-    inputrootfile = cms.untracked.string('DQM_GainCalibration_Run54974.root'),
+    inputrootfile = cms.untracked.string('DQM_Gain_Run63033.root'),
     record = cms.untracked.string('SiPixelGainCalibrationOfflineRcd'),
-    useMeanWhenEmpty = cms.untracked.bool(True)                                     
+    useMeanWhenEmpty = cms.untracked.bool(True)  ,
+    badChi2Prob = cms.untracked.double(0.00001)                                       
 )
 
 process.readfileHLT = cms.EDFilter("SiPixelGainCalibrationReadDQMFile",
-    inputrootfile = cms.untracked.string('DQM_GainCalibration_Run54974.root'),
+    inputrootfile = cms.untracked.string('DQM_Gain_Run63033.root'),
     record = cms.untracked.string('SiPixelGainCalibrationForHLTRcd'),
-    useMeanWhenEmpty = cms.untracked.bool(True)                      
+    useMeanWhenEmpty = cms.untracked.bool(True),  
+    badChi2Prob = cms.untracked.double(0.00001)                             
 )
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1)
 )
-process.source = cms.Source("EmptyIOVSource",
-    lastValue = cms.uint64(1),
+process.source = cms.Source("EmptyIOVSource",                            
+    lastRun = cms.untracked.uint32(1),
     timetype = cms.string('runnumber'),
     firstValue = cms.uint64(1),
     interval = cms.uint64(1)
@@ -38,19 +40,16 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
 #        authenticationPath = cms.untracked.string('/afs/cern.ch/cms/DB/conddb')
     ),
     toPut = cms.VPSet(
-        cms.PSet(
-            record = cms.string('SiPixelGainCalibrationForHLTRcd'),
-            tag = cms.string('GainCalib_TESTHLT2')
-        ), 
+        
         cms.PSet(
             record = cms.string('SiPixelGainCalibrationOfflineRcd'),
-            tag = cms.string('GainCalib_TESTOFFLINE2')
+            tag = cms.string('GainCalib_TEST')
         )
     ),
-    connect = cms.string('sqlite_file:prova_rawdata.db')
+    connect = cms.string('sqlite_file:prova_data.db')
 #    connect = cms.string('oracle://cms_orcoff_int2r/CMS_COND_21X_PIXEL')
 )
 
-process.p = cms.Path(process.readfileHLT*process.readfileOffline)
+process.p = cms.Path(process.readfileOffline)
 
 
