@@ -13,7 +13,7 @@
 //
 // Original Author:  Freya BLEKMAN
 //         Created:  Tue Aug  5 16:22:46 CEST 2008
-// $Id: SiPixelGainCalibrationReadDQMFile.cc,v 1.7 2008/08/18 10:49:27 fblekman Exp $
+// $Id: SiPixelGainCalibrationReadDQMFile.cc,v 1.8 2008/10/15 14:58:29 fblekman Exp $
 //
 //
 
@@ -48,6 +48,7 @@
 #include "TKey.h"
 #include "TString.h"
 #include "TList.h"
+#include "TTree.h"
 
 #include "CalibTracker/SiPixelGainCalibration/test/SiPixelGainCalibrationReadDQMFile.h"
 #include "PhysicsTools/UtilAlgos/interface/TFileService.h"
@@ -63,11 +64,25 @@ void SiPixelGainCalibrationReadDQMFile::fillDatabase(const edm::EventSetup& iSet
   std::cout << "now starting db fill!!!" << std::endl;
   
   std::map<uint32_t,std::pair<TString,int> > badresults;
-  TFile *histofile = new TFile("temphistofile.root","recreate");
-  histofile->cd();
+
+  edm::Service<TFileService> fs;
+
   bool usedmean=false;
   bool isdead=false;
-  TH1F *VCAL_endpoint = new TH1F("VCAL_endpoint","value where response = 255 ( x = (255 - ped)/gain )",256,0,256);
+  TH1F *VCAL_endpoint = fs->make<TH1F>("VCAL_endpoint","value where response = 255 ( x = (255 - ped)/gain )",256,0,256);
+  TH1F *goodgains = fs->make<TH1F>("goodgains","gain values",100,0,10);
+  TH1F *goodpeds = fs->make<TH1F>("goodpeds","pedestal values",356,-100,256);
+  TTree *tree = new TTree("tree","tree");
+  int detidfortree,rowfortree,colfortree,useddefaultfortree;
+  float pedfortree, gainfortree,chi2fortree;
+  tree->Branch("detid",&detidfortree,"detid/I");
+  tree->Branch("row",&rowfortree,"row/I");
+  tree->Branch("col",&colfortree,"col/I");
+  tree->Branch("defaultval",&useddefaultfortree,"defaultval/I");
+  tree->Branch("ped",&pedfortree,"ped/F");
+  tree->Branch("gain",&gainfortree,"gain/F");
+  tree->Branch("chi2",&chi2fortree,"chi2/F");
+
   
   size_t ntimes=0;
   std::cout << "now filling record " << record_ << std::endl;
@@ -91,11 +106,11 @@ void SiPixelGainCalibrationReadDQMFile::fillDatabase(const edm::EventSetup& iSet
     pedhi_=pedmax_;
   float badpedval=pedlow_-200;
   float badgainval=gainlow_-200;
-  std::cout << "now filling db: values: pedlow, hi: " << pedlow_ << ", " << pedhi_ << " and gainlow, hi: " << gainlow_ << ", " << gainhi_ ;
+  //  std::cout << "now filling db: values: pedlow, hi: " << pedlow_ << ", " << pedhi_ << " and gainlow, hi: " << gainlow_ << ", " << gainhi_ ;
   float meangain= meanGainHist_->GetMean();
   float meanped = meanPedHist_->GetMean();
-  std::cout << ", and mean gain " << meangain<< ", ped " << meanped ;
-  std::cout << std::endl;
+  //  std::cout << ", and mean gain " << meangain<< ", ped " << meanped ;
+  //  std::cout << std::endl;
   
   // and fill the dummy histos:
   
@@ -126,18 +141,23 @@ void SiPixelGainCalibrationReadDQMFile::fillDatabase(const edm::EventSetup& iSet
     if(detid==0)
       continue;
     ntimes=0;
+    useddefaultfortree=0;
     //    std::cout << "now creating database object for detid " << detid << " " << bookkeeper_[detid]["gain_2d"] << " " << bookkeeper_[detid]["ped_2d"] << std::endl; //std::cout<< " nrows:" << nrows << " ncols: " << ncols << std::endl;
 
     // Get the module sizes.
     TString tempchi2string = bookkeeper_[detid]["chi2prob_2d"];
     TH2F *tempchi2 = (TH2F*)therootfile_->Get(tempchi2string);
-    if(tempchi2==0)
+    if(tempchi2==0){
       tempchi2=defaultChi2_;
+      useddefaultfortree=1;
+    }
     TString tempgainstring = bookkeeper_[detid]["gain_2d"];
     TH2F *tempgain = (TH2F*)therootfile_->Get(tempgainstring);
     if(tempgain==0){
       //      std::cout <<"WARNING, gain histo " << bookkeeper_[detid]["gain_2d"] << " does not exist, using default instead" << std::endl;
-      tempgain=defaultGain_;   
+      tempgain=defaultGain_;  
+      useddefaultfortree=1;
+      
     }
     TString temppedstring = bookkeeper_[detid]["ped_2d"];
     TH2F *tempped = (TH2F*) therootfile_->Get(temppedstring);
@@ -146,6 +166,7 @@ void SiPixelGainCalibrationReadDQMFile::fillDatabase(const edm::EventSetup& iSet
       std::pair<TString,int> tempval(tempgainstring,0);
       badresults[detid]=tempval;
       tempped=defaultPed_;
+      useddefaultfortree=1;
     }
     const PixelGeomDetUnit * pixDet  = dynamic_cast<const PixelGeomDetUnit*>((*it));
     const PixelTopology & topol = pixDet->specificTopology();       
@@ -187,14 +208,23 @@ void SiPixelGainCalibrationReadDQMFile::fillDatabase(const edm::EventSetup& iSet
 
 	if(ped>pedlow_ && gain>gainlow_ && ped<pedhi_ && gain<gainhi_ && chi2>badchi2_){
 	  ntimes++;
-	  if(ntimes<=10)
-	    std::cout << detid << " " << jrow << " " << icol << " " << ped << " " << ped << " " << chi2 << std::endl;
+	  //	  if(ntimes<=10)
+	  //	    std::cout << detid << " " << jrow << " " << icol << " " << ped << " " << ped << " " << chi2 << std::endl;
 	  VCAL_endpoint->Fill((255 - ped)/gain);
 	  peds[jrow]=ped;
 	  gains[jrow]=gain;
 	  pedforthiscol[iglobalrow]+=ped;
 	  gainforthiscol[iglobalrow]+=gain;
 	  nusedrows[iglobalrow]++;
+	  goodpeds->Fill(ped);
+	  goodgains->Fill(gain);
+	  detidfortree=detid;
+	  rowfortree=jrow-1;
+	  colfortree=icol-1;
+	  gainfortree=gain;
+	  pedfortree=ped;
+	  chi2fortree=chi2;
+	  tree->Fill();
 	}
 	else{  
 	  nemptypixels++;
@@ -375,8 +405,6 @@ void SiPixelGainCalibrationReadDQMFile::fillDatabase(const edm::EventSetup& iSet
     }
     edm::LogInfo(" --- all OK");
   } 
-  histofile->Write();
-  histofile->Close();
 }
 
 SiPixelGainCalibrationReadDQMFile::SiPixelGainCalibrationReadDQMFile(const edm::ParameterSet& iConfig):
