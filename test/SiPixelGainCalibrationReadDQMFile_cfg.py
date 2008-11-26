@@ -8,15 +8,18 @@ process.load("Geometry.TrackerGeometryBuilder.idealForDigiTrackerGeometry_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.GlobalTag.globaltag = "STARTUP_V4::All"
 
+process.TFileService = cms.Service("TFileService",
+                                   fileName = cms.string("histos.root")
+                                   )
 process.readfileOffline = cms.EDFilter("SiPixelGainCalibrationReadDQMFile",
-    inputrootfile = cms.untracked.string('DQM_Gain_Run63033.root'),
+    inputrootfile = cms.untracked.string('DQM_71935.root'),
     record = cms.untracked.string('SiPixelGainCalibrationOfflineRcd'),
     useMeanWhenEmpty = cms.untracked.bool(True)  ,
     badChi2Prob = cms.untracked.double(0.00001)                                       
 )
 
 process.readfileHLT = cms.EDFilter("SiPixelGainCalibrationReadDQMFile",
-    inputrootfile = cms.untracked.string('DQM_Gain_Run63033.root'),
+    inputrootfile = cms.untracked.string('DQM_71935.root'),
     record = cms.untracked.string('SiPixelGainCalibrationForHLTRcd'),
     useMeanWhenEmpty = cms.untracked.bool(True),  
     badChi2Prob = cms.untracked.double(0.00001)                             
@@ -26,11 +29,12 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1)
 )
 process.source = cms.Source("EmptyIOVSource",                            
-    lastRun = cms.untracked.uint32(1),
-    timetype = cms.string('runnumber'),
-    firstValue = cms.uint64(1),
-    interval = cms.uint64(1)
-)
+                            lastRun = cms.untracked.uint32(1),
+                            timetype = cms.string('runnumber'),
+                            firstValue = cms.uint64(1),
+                            lastValue=cms.uint64(1),
+                            interval = cms.uint64(1)
+                            )
 
 process.PoolDBOutputService = cms.Service("PoolDBOutputService",
     BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),
@@ -46,7 +50,7 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
             tag = cms.string('GainCalib_TEST')
         )
     ),
-    connect = cms.string('sqlite_file:prova_data.db')
+    connect = cms.string('sqlite_file:prova.db')
 #    connect = cms.string('oracle://cms_orcoff_int2r/CMS_COND_21X_PIXEL')
 )
 
