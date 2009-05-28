@@ -1,7 +1,6 @@
 <use name=DataFormats/SiPixelDigi>
 <use name=CalibFormats/SiPixelObjects>
 <use name=CondFormats/SiPixelObjects>
-<use name=CondTools/SiPixel>
 <use name=CondCore/DBOutputService>
 <use name=Geometry/TrackerGeometryBuilder>
 <use name=Geometry/Records>
